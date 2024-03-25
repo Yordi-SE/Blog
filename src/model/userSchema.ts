@@ -1,4 +1,13 @@
 import mongoose from 'mongoose';
+interface IUser extends mongoose.Document {
+    username: string;
+    email: string;
+    password: string;
+    name: string;
+    bio: string;
+    profilePicture?: string;
+    role: string;
+}
 const UserSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -26,7 +35,7 @@ const UserSchema = new mongoose.Schema({
         maxlength: 200,
         minlength: 5
     },
-    profilePicture: {
+    profileImage: {
         type: String,
     },
     role: {
@@ -34,5 +43,4 @@ const UserSchema = new mongoose.Schema({
         required: true
     }
 })
-const User = mongoose.model("User",UserSchema)
-export default User
+export default mongoose.model<IUser>("User",UserSchema)
