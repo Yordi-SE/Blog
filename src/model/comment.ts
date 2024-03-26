@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import mongoose, { Document, Schema } from 'mongoose';
 
 
@@ -34,38 +33,5 @@ const commentSchema: Schema<IComment> = new Schema({
 const Comment = mongoose.model<IComment>('Comment', commentSchema);
 
 export { Comment, IComment };
-=======
-import { User } from './user';
-import { Blog } from './blog';
 
 
-interface User {
-  userID: number;
-}
-
-
-interface Blog {
-  blogID: number;
-}
-
-
-export interface Comment {
-  commentID: number;    
-  userID: number;       
-  blogID: number;       
-  content: string;
-}
-
-
-export interface CommentWithRefs extends Comment {
-  user: User;
-  blog: Blog;
-}
-
-
-
-
-
-
-
->>>>>>> 0b280b07421925e61adae54abb871f6c5cfeb624
