@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 import path from 'path';
 dotenv.config({ path: path.resolve(__dirname, '../config.env')});
-import db from './model/db'
+import db from './config/db'
 import createApp from './utils/server'
 const app = createApp()
 const PORT = process.env.PORT? parseInt(process.env.PORT) : 3000
