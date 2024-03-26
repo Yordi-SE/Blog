@@ -1,33 +1,35 @@
-import { User } from './user';
-import { Blog } from './blog';
+import mongoose, { Document, Schema } from 'mongoose';
 
 
-interface User {
-  userID: number;
-}
-
-
-interface Blog {
-  blogID: number;
-}
-
-
-export interface Comment {
-  commentID: number;    
-  userID: number;       
-  blogID: number;       
+interface IComment extends Document {
+  commentId: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  blogId: mongoose.Types.ObjectId;
   content: string;
 }
 
+const commentSchema: Schema<IComment> = new Schema({
+  commentId: {
+    type: mongoose.Types.ObjectId,
+    required: true
+  },
+  userId: {
+    type: mongoose.Types.ObjectId,
+    ref:"User",
+    required: true
+  },
+  blogId: {
+    type: mongoose.Types.ObjectId,
+    ref:"Blog",
+    required: true
+  },
+  content: {
+    type: String,
+    required: true
+  }
+});
 
-export interface CommentWithRefs extends Comment {
-  user: User;
-  blog: Blog;
-}
+// Create a model based on the schema
+const Comment = mongoose.model<IComment>('Comment', commentSchema);
 
-
-
-
-
-
-
+export { Comment, IComment };
