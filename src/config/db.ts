@@ -16,4 +16,5 @@ const db = async ():Promise<any> => {
         console.log("error connecting to database",err)
     }
 }
+// 
 export default db
