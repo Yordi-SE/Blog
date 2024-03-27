@@ -1,42 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import Blog from '../model/blogModel';
 import Tag from "../model/tagSchema";
-import Like from '../model/likeModel';
-import Comment from '../model/commentModel';
-import Rating from "../model/ratingSchema";
 const getAll = async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
     try{
         const page_number:number = req.query.page ? parseInt(req.query.page as string): 1
         const Page_size:number = req.query.page_size ? parseInt(req.query.page_size as string): 10
-        const array:any[] = [];
         const blogs = await Blog.find().select('-userId').populate('tagId').skip((page_number - 1) * Page_size)
-        let ratingValue = 0
-        for (const i in blogs){
-            const numOfRatings = await Rating.countDocuments({blogId: blogs[i]._id})
-            if (numOfRatings !== 0) {
-                let ratings = 0;
-                const rate = await Rating.find({blogId:blogs[i]._id})
-                for (const j in rate){
-                    ratings += rate[j].ratingValue
-                }
-                ratingValue = Math.floor(ratings/numOfRatings)
-            }
-
-            
-            const new_blog = {
-                blogId: blogs[i]._id,
-                blogTitle: blogs[i].title,
-                blogContent: blogs[i].content,
-                blogTags: blogs[i].tagId,
-                comments: blogs[i].comments || 0,
-                likes : blogs[i].likes || 0,
-                rating: ratingValue
-            }
-            array.push(new_blog)
-        }
-
-
-        res.status(200).json(array)
+        res.status(200).json(blogs)
     }
     catch(err){
         console.log("erro occured while getting blog",err)
@@ -48,28 +18,8 @@ const getAll = async (req:Request,res:Response,next:NextFunction):Promise<void>=
 }
 const getById = async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
     try{
-        const blog = await Blog.findById(req.params.id).populate('tagId')
-        let ratingValue = 0
-        const numOfRatings = await Rating.countDocuments({blogId: blog?._id})
-
-        if (numOfRatings !== 0) {
-            let ratings = 0;
-            const rate = await Rating.find({blogId:blog?._id})
-            for (const j in rate){
-                ratings += rate[j].ratingValue
-            }
-            ratingValue = Math.floor(ratings/numOfRatings)
-        }
-        const new_blog = {
-            blogId: blog?._id,
-            blogTitle: blog?.title,
-            blogContent: blog?.content,
-            blogTags: blog?.tagId,
-            comments: blog?.comments || 0,
-            likes : blog?.likes || 0,
-            rating: ratingValue
-        }
-        res.status(200).json(new_blog)
+        const blog = await Blog.findById(req.params.id).select('-userId').populate('tagId')
+        res.status(200).json(blog)
     }
     catch(err){
         console.log("erro occured while getting blog",err)
@@ -83,32 +33,23 @@ const getMyBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>
     try{
         const page_number:number = req.query.page ? parseInt(req.query.page as string): 1
         const Page_size:number = req.query.page_size ? parseInt(req.query.page_size as string): 10
-        const blogs = await Blog.find({$and: [{_id:req.params.id},{userId:req.userId}]}).select('-userId').populate('tagId').skip((page_number - 1) * Page_size)
-        const array:any[] = [];
-        let ratingValue = 0
-        for (const i in blogs){
-            const numOfRatings = await Rating.countDocuments({blogId: blogs[i]._id})
-            if (numOfRatings !== 0) {
-                let ratings = 0;
-                const rate = await Rating.find({blogId:blogs[i]._id})
-                for (const j in rate){
-                    ratings += rate[j].ratingValue
-                }
-                ratingValue = Math.floor(ratings/numOfRatings)
-            }
-            
-            const new_blog = {
-                blogId: blogs[i]._id,
-                blogTitle: blogs[i].title,
-                blogContent: blogs[i].content,
-                blogTags: blogs[i].tagId,
-                comments: blogs[i].comments || 0,
-                likes : blogs[i].likes || 0,
-                rating: ratingValue
-            }
-            array.push(new_blog)
-        }
-        res.status(200).json(array)
+        const blogs = await Blog.find({userId:req.user.id}).select('-userId').populate('tagId').skip((page_number - 1) * Page_size)
+        res.status(200).json(blogs)
+    }
+    catch(err){
+        console.log("erro occured while getting blog",err)
+        res.status(400).json({
+            status: 'error',
+            message: "erro occured while getting blog"
+        })
+    }
+}
+const getUserBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>{
+    try{
+        const page_number:number = req.query.page ? parseInt(req.query.page as string): 1
+        const Page_size:number = req.query.page_size ? parseInt(req.query.page_size as string): 10
+        const blogs = await Blog.find({userId:req.params.id}).select('-userId').populate('tagId').skip((page_number - 1) * Page_size)
+        res.status(200).json(blogs)
     }
     catch(err){
         console.log("erro occured while getting blog",err)
@@ -128,19 +69,13 @@ const createBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=
         }
         const new_blog = {
             title: req.body.title,
-            userId:req.userId,
+            userId:req.user.id,
             content: req.body.content,
             tagId: req.body.tagId
         }
         const blog = await Blog.create(new_blog);
-        const populatedBlog = await Blog.findById(blog._id).populate('tagId')
-        console.log(populatedBlog)
-        res.status(201).json({
-            blogId: populatedBlog?._id,
-            blogTitle: populatedBlog?.title,
-            blogContent: populatedBlog?.content,
-            blogTags: populatedBlog?.tagId
-        })
+        const populatedBlog = await Blog.findById(blog._id).select('-userId').populate('tagId')
+        res.status(201).json(populatedBlog)
     }
     catch(err:any){
         console.log("error occured while updating the blog",err)
@@ -164,7 +99,7 @@ const patchBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>
             tagId:req.body.tagId
 
         }
-        const updatedBlog = await Blog.findOneAndUpdate({$and: [{_id:req.params.id},{userId:req.userId}]},blog);
+        const updatedBlog = await Blog.findOneAndUpdate({$and: [{_id:req.params.id},{userId:req.user.id}]},blog).populate('tagId').select('-userId');
         if (!updatedBlog){
             res.status(404).json({
                 status: 'error',
@@ -172,37 +107,36 @@ const patchBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>
             })
         }
         else {
-            const populatedBlog = await Blog.findById(req.params.id).populate('tagId');
-            res.status(200).json({
-                blogId: populatedBlog?._id,
-                blogTitle: populatedBlog?.title,
-                blogContent: populatedBlog?.content,
-                blogTags: populatedBlog?.tagId
+            res.status(200).json(updatedBlog)
+        }
+
+    }
+    catch(err:any){
+        console.log("error occured while updating the blog")
+        res.status(400).json({
+            status: 'error',
+            message: err.message
+        })
+    }
+
+}
+const deleteBlog = async (req:any,res:Response,next:NextFunction):Promise<any>=>{
+    try {
+        const blog = await Blog.findById(req.params.id)
+        if (!blog){
+            return res.status(404).json({
+                status:'error',
+                message: 'blog not found'
             })
         }
-
-    }
-    catch(err:any){
-        console.log("error occured while updating the blog")
-        res.status(400).json({
-            status: 'error',
-            message: err.message
-        })
-    }
-
-}
-const deleteBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>{
-    try {
-        const blog = await Blog.findOneAndDelete({$and: [{_id:req.params.id},{userId:req.userId}]})
-        if (blog){
-            res.status(204).send()
-        }
-        else{
-            res.status(404).json({
+        if (blog.userId !== req.user.id && req.user.role != 'Admin'){
+            return res.status(403).json({
                 status: 'error',
-                message: "blog not found"
-            })        
+                message: 'unauthorized'
+            })
         }
+        await Blog.findByIdAndDelete(req.params.id)
+        res.status(204).send()
     }
     catch(err:any){
         console.log("error occured while updating the blog")
@@ -212,4 +146,4 @@ const deleteBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=
         })
     }
 }
-export default {createBlog,patchBlog,getAll,deleteBlog,getById,getMyBlog}
+export default {createBlog,patchBlog,getAll,deleteBlog,getById,getMyBlog,getUserBlog}

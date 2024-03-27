@@ -1,4 +1,5 @@
 import { Schema, model ,Document} from "mongoose";
+import { object } from "webidl-conversions";
 
 export interface IBlog extends Document {
     title: string,
@@ -6,8 +7,19 @@ export interface IBlog extends Document {
     tagId: Schema.Types.ObjectId,
     userId: Schema.Types.ObjectId,
     comments: number,
-    likes: number
+    likes: number,
+    rating: object
 }
+const ratingSchema = new Schema({
+    ratingValue: {
+        type: Number,
+        default: 0
+    },
+    ratingNumber:{
+        type: Number,
+        default: 0
+    }
+})
 
 const blogSchema = new Schema({
     title: {
@@ -27,10 +39,13 @@ const blogSchema = new Schema({
     },
     comments: {
         type: Number,
+        default: 0
     },
     likes: {
-        type: Number
-    }
+        type: Number,
+        default: 0
+    },
+    rating: ratingSchema
 })
 
 export default model<IBlog>('Blog', blogSchema)
