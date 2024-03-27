@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Blog from '../model/blogModel';
 import Tag from "../model/tagSchema";
+import User from "../model/userSchema";
 const getAll = async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
     try{
         const page_number:number = req.query.page ? parseInt(req.query.page as string): 1
@@ -44,11 +45,18 @@ const getMyBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>
         })
     }
 }
-const getUserBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>{
+const getUserBlog = async (req:any,res:Response,next:NextFunction):Promise<any>=>{
     try{
         const page_number:number = req.query.page ? parseInt(req.query.page as string): 1
         const Page_size:number = req.query.page_size ? parseInt(req.query.page_size as string): 10
-        const blogs = await Blog.find({userId:req.params.id}).select('-userId').populate('tagId').skip((page_number - 1) * Page_size)
+        const user:any = User.findOne({username: req.params.username})
+        if (!user){
+            return res.status(404).json({
+                status: 'error',
+                message:'user not found'
+            })
+        }
+        const blogs = await Blog.find({userId:user._id}).select('-userId').populate('tagId').skip((page_number - 1) * Page_size)
         res.status(200).json(blogs)
     }
     catch(err){
