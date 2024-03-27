@@ -10,13 +10,18 @@ const getAll = async (req:Request,res:Response,next:NextFunction):Promise<void>=
         const Page_size:number = req.query.page_size ? parseInt(req.query.page_size as string): 10
         const array:any[] = [];
         const blogs = await Blog.find().select('-userId').populate('tagId').skip((page_number - 1) * Page_size)
+        let ratingValue = 0
         for (const i in blogs){
             const numOfRatings = await Rating.countDocuments({blogId: blogs[i]._id})
-            let ratings = 0;
-            const rate = await Rating.find({blogId:blogs[i]._id})
-            for (const j in rate){
-                ratings += rate[j].ratingValue
+            if (numOfRatings !== 0) {
+                let ratings = 0;
+                const rate = await Rating.find({blogId:blogs[i]._id})
+                for (const j in rate){
+                    ratings += rate[j].ratingValue
+                }
+                ratingValue = Math.floor(ratings/numOfRatings)
             }
+
             
             const new_blog = {
                 blogId: blogs[i]._id,
@@ -25,7 +30,7 @@ const getAll = async (req:Request,res:Response,next:NextFunction):Promise<void>=
                 blogTags: blogs[i].tagId,
                 comments: blogs[i].comments || 0,
                 likes : blogs[i].likes || 0,
-                rating: Math.floor(ratings/numOfRatings)
+                rating: ratingValue
             }
             array.push(new_blog)
         }
@@ -44,13 +49,17 @@ const getAll = async (req:Request,res:Response,next:NextFunction):Promise<void>=
 const getById = async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
     try{
         const blog = await Blog.findById(req.params.id).populate('tagId')
+        let ratingValue = 0
         const numOfRatings = await Rating.countDocuments({blogId: blog?._id})
 
-        let ratings = 0;
-        const rate = await Rating.find({blogId:blog?._id})
-        for (const j in rate){
-            ratings += rate[j].ratingValue
-        } 
+        if (numOfRatings !== 0) {
+            let ratings = 0;
+            const rate = await Rating.find({blogId:blog?._id})
+            for (const j in rate){
+                ratings += rate[j].ratingValue
+            }
+            ratingValue = Math.floor(ratings/numOfRatings)
+        }
         const new_blog = {
             blogId: blog?._id,
             blogTitle: blog?.title,
@@ -58,7 +67,7 @@ const getById = async (req:Request,res:Response,next:NextFunction):Promise<void>
             blogTags: blog?.tagId,
             comments: blog?.comments || 0,
             likes : blog?.likes || 0,
-            rating: Math.floor(ratings/numOfRatings)
+            rating: ratingValue
         }
         res.status(200).json(new_blog)
     }
@@ -76,12 +85,16 @@ const getMyBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>
         const Page_size:number = req.query.page_size ? parseInt(req.query.page_size as string): 10
         const blogs = await Blog.find({$and: [{_id:req.params.id},{userId:req.userId}]}).select('-userId').populate('tagId').skip((page_number - 1) * Page_size)
         const array:any[] = [];
+        let ratingValue = 0
         for (const i in blogs){
             const numOfRatings = await Rating.countDocuments({blogId: blogs[i]._id})
-            let ratings = 0;
-            const rate = await Rating.find({blogId:blogs[i]._id})
-            for (const j in rate){
-                ratings += rate[j].ratingValue
+            if (numOfRatings !== 0) {
+                let ratings = 0;
+                const rate = await Rating.find({blogId:blogs[i]._id})
+                for (const j in rate){
+                    ratings += rate[j].ratingValue
+                }
+                ratingValue = Math.floor(ratings/numOfRatings)
             }
             
             const new_blog = {
@@ -91,7 +104,7 @@ const getMyBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>
                 blogTags: blogs[i].tagId,
                 comments: blogs[i].comments || 0,
                 likes : blogs[i].likes || 0,
-                rating: Math.floor(ratings/numOfRatings)
+                rating: ratingValue
             }
             array.push(new_blog)
         }
