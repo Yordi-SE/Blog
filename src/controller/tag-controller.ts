@@ -8,6 +8,8 @@ export const createTag = async (req: Request, res: Response): Promise<void> => {
             tagName
         });
 
+
+        
         await tag.save();
         res.status(201).json("message: tag created");
 
