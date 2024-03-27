@@ -17,7 +17,6 @@ const createUser = async (req: Request, res: Response) => {
             name, 
             bio,
         } = req.body;
-
         // Check if the user already exists
         const user = await User.findOne({ username, email });
         if (user) {
