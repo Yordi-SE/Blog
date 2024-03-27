@@ -1,53 +1,67 @@
 import User from "../model/userSchema";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import multer from "multer";
+import cloudinary from "../config/cloudinaryConfig"
 
+// Configure Multer for file uploads
+const upload = multer({ dest: 'uploads/' });
 
-
-// create a new user
-export const createUser = async (req: Request, res: Response) => {
+const createUser = async (req: Request, res: Response) => {
+    console.log(req.body);
     try {
         const { 
             username, 
             email, 
             password, 
             name, 
-            bio, 
-            profilePicture, 
-            role 
+            bio,
         } = req.body;
 
         // Check if the user already exists
-        const user = await User.findOne({ username, email});
+        const user = await User.findOne({ username, email });
         if (user) {
             return res.status(400).json({ message: "User already exists" });
-        };
+        }
 
-        // Create a new user
-        const createdUser = await User.create({
-            username,
-            email,
-            password,
-            name,
-            bio,
-            profilePicture,
-            role
-        });
+        // Upload profile picture to Cloudinary
+        upload.single('profileImage')(req, res, async (err) => {
+            if (err) {
+                return res.status(500).json({ error: 'Failed to upload profile picture',err });
+            }
 
-        // Send the response
-        res.status(201).json({
-            message: "User created successfully",
-            user: createdUser
+            let profilePictureUrl = null;
+
+            // Check if file was uploaded
+            if (req.file) {
+                const result = await cloudinary.v2.uploader.upload(req.file.path);
+                profilePictureUrl = result.secure_url;
+            }
+
+            // Create a new user with profile picture URL
+            const createdUser = await User.create({
+                username,
+                email,
+                password,
+                name,
+                bio,
+                profileImage: profilePictureUrl, // Save profile picture URL in the user document
+            });
+
+            // Send the response
+            res.status(201).json({
+                message: "User created successfully",
+                user: createdUser
+            });
         });
 
     } catch (err) {
         res.status(400).json(err);
     }
-};
-
+}
 
 // get specific user
-export const getUser = async (req: Request, res: Response) => { 
+const getUser = async (req: Request, res: Response) => { 
     try {
         const { id } = req.params;
         const user = await User
@@ -64,8 +78,9 @@ export const getUser = async (req: Request, res: Response) => {
 };
 
 // update user
-export const updateUser = async (req: Request, res: Response) => {
+const updateUser = async (req: Request, res: Response) => {
     try {
+
         const { id } = req.params;
         const { 
             username, 
@@ -73,7 +88,7 @@ export const updateUser = async (req: Request, res: Response) => {
             password, 
             name, 
             bio, 
-            profilePicture, 
+            profileImage, 
             // role 
         } = req.body;
 
@@ -85,7 +100,7 @@ export const updateUser = async (req: Request, res: Response) => {
         if (password) updateFields.password = password;
         if (name) updateFields.name = name;
         if (bio) updateFields.bio = bio;
-        if (profilePicture) updateFields.profilePicture = profilePicture;
+        if (profileImage) updateFields.profileImage = profileImage;
         // if (role) updateFields.role = role;
 
         // update the user
@@ -107,7 +122,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
 // delete user
 
-export const InactiveUser = async (req: Request, res: Response) => {
+const InactiveUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const user = await User.findByIdAndUpdate(
@@ -127,7 +142,7 @@ export const InactiveUser = async (req: Request, res: Response) => {
 
 // get all users
 
-export const getAllUsers = async (req: Request, res: Response) => {
+const getAllUsers = async (req: Request, res: Response) => {
     try {
         const users = await User.find()
             .populate("blogs")
@@ -140,3 +155,5 @@ export const getAllUsers = async (req: Request, res: Response) => {
         res.status(400).json(err);
     }
 };
+
+export { createUser, getUser, updateUser, InactiveUser, getAllUsers };

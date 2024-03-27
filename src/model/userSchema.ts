@@ -23,7 +23,7 @@ const UserSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        minlength: 5
+        minlength: 8
     },
     name: {
         type: String,
@@ -32,7 +32,6 @@ const UserSchema = new mongoose.Schema({
     },
     bio: {
         type: String,
-        required: true,
         maxlength: 200,
         minlength: 5
     },
@@ -41,7 +40,6 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        required: true,
         default: "user"
     },
     active: {
