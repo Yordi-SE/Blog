@@ -8,7 +8,6 @@ import cloudinary from "../config/cloudinaryConfig"
 const upload = multer({ dest: 'uploads/' });
 
 const createUser = async (req: Request, res: Response) => {
-    console.log(req.body);
     try {
         const { 
             username, 
@@ -60,15 +59,11 @@ const createUser = async (req: Request, res: Response) => {
 }
 
 // get specific user
-const getUser = async (req: Request, res: Response) => { 
+const getUser = async (req: any, res: Response) => { 
     try {
-        const { id } = req.params;
+        const { id } = req.user;
         const user = await User
             .findById(id)
-            .populate("blogs")
-            .populate("tags")
-            .populate("comments")
-            .populate("ratings")
             .exec();
         res.status(200).json(user);
     } catch (err) {
@@ -77,10 +72,10 @@ const getUser = async (req: Request, res: Response) => {
 };
 
 // update user
-const updateUser = async (req: Request, res: Response) => {
+const updateUser = async (req: any, res: Response) => {
     try {
 
-        const { id } = req.params;
+        const { id } = req.user;
         const { 
             username, 
             email, 
@@ -123,7 +118,7 @@ const updateUser = async (req: Request, res: Response) => {
 
 const InactiveUser = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const { id } = req.user;
         const user = await User.findByIdAndUpdate(
             id,
             { active: false },
@@ -144,10 +139,6 @@ const InactiveUser = async (req: Request, res: Response) => {
 const getAllUsers = async (req: Request, res: Response) => {
     try {
         const users = await User.find()
-            .populate("blogs")
-            .populate("tags")
-            .populate("comments")
-            .populate("ratings")
             .exec();
         res.status(200).json(users);
     } catch (err) {
