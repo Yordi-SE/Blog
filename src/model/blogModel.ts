@@ -5,7 +5,8 @@ export interface IBlog extends Document {
     content: string,
     tagId: Schema.Types.ObjectId,
     userId: Schema.Types.ObjectId,
-
+    comments: number,
+    likes: number
 }
 
 const blogSchema = new Schema({
@@ -23,9 +24,13 @@ const blogSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'User', // Reference to the User model
         required: true
+    },
+    comments: {
+        type: Number,
+    },
+    likes: {
+        type: Number
     }
-
-
 })
 
 export default model<IBlog>('Blog', blogSchema)
