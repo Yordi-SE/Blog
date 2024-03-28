@@ -7,6 +7,7 @@ interface IUser extends mongoose.Document {
     bio: string;
     profilePicture?: string;
     role: string;
+    active: boolean;
 }
 const UserSchema = new mongoose.Schema({
     username: {
@@ -40,7 +41,12 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        required: true
+        required: true,
+        default: "user"
+    },
+    active: {
+        type: Boolean,
+        default: true
     }
 })
 export default mongoose.model<IUser>("User",UserSchema)
