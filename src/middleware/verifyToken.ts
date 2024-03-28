@@ -48,6 +48,16 @@ const isAdmin = (req: any, res: Response, next: NextFunction) => {
 };
 
 
+const isOwnerOrAdmin = (req: any, res: Response, next: NextFunction) => {
+    
+    if (req.user.role !== "admin" && req.user.id !== req.params.id) {
+        return res.status(403).json({
+            message: "Access denied, only admin can access this route"
+        });
+    }
+    next();
+};
+
 
 
 export { verifyToken, isAdmin };

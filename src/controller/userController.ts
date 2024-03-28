@@ -63,7 +63,7 @@ const getUser = async (req: any, res: Response) => {
     try {
         const {role} = req.user;
         if (role === 'admin') {
-            
+
             const username = req.params.username;
             const user = await User.findOne({ username });
 
@@ -75,9 +75,7 @@ const getUser = async (req: any, res: Response) => {
         }
         const { id } = req.user;
 
-        if (!id) {
-            res.status(401).json({ message: "Unauthorized" });
-        }
+        
         const user = await User
             .findById(id)
             .exec();
