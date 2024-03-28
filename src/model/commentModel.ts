@@ -8,7 +8,7 @@ interface IComment extends Document {
   content: string;
 }
 
-const commentSchema: Schema<IComment> = new Schema({
+const commentSchema: Schema = new Schema({
   commentId: {
     type: mongoose.Types.ObjectId,
     required: true
@@ -30,6 +30,4 @@ const commentSchema: Schema<IComment> = new Schema({
 });
 
 // Create a model based on the schema
-const Comment = mongoose.model<IComment>('Comment', commentSchema);
-
-export { Comment, IComment };
+export default mongoose.model<IComment>('Comment', commentSchema);

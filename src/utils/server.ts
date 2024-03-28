@@ -4,8 +4,8 @@ import bodyParser from 'body-parser';
 import multer from 'multer';
 
 import tagRoutes from '../routes/tag-routes';
-
-
+import tagRoutes from '../routes/tagRoutes';
+import blogRoutes from '../routes/blogRoutes'
 const createApp = ():express.Application =>{
     const app:express.Application = express()
     
@@ -16,7 +16,7 @@ const createApp = ():express.Application =>{
     app.use(userRoutes)
 
     app.use('/api', tagRoutes)
-
+    app.use('/api',blogRoutes)
     return app
 }
 export default createApp
