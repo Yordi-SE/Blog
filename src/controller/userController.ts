@@ -61,11 +61,28 @@ const createUser = async (req: Request, res: Response) => {
 // get specific user
 const getUser = async (req: any, res: Response) => { 
     try {
+        const {role} = req.user;
+        if (role === 'admin') {
+            
+            const username = req.params.username;
+            const user = await User.findOne({ username });
+
+            if (!user) {
+                res.status(404).json({ message: "User not found" });
+            } else {
+                res.status(200).json(user);
+            }
+        }
         const { id } = req.user;
+
+        if (!id) {
+            res.status(401).json({ message: "Unauthorized" });
+        }
         const user = await User
             .findById(id)
             .exec();
         res.status(200).json(user);
+
     } catch (err) {
         res.status(400).json(err);
     }
@@ -116,18 +133,32 @@ const updateUser = async (req: any, res: Response) => {
 
 // delete user
 
-const InactiveUser = async (req: Request, res: Response) => {
+const InactiveUser = async (req: any, res: Response) => {
     try {
-        const { id } = req.user;
-        const user = await User.findByIdAndUpdate(
-            id,
-            { active: false },
-            { new: true }
-        );
-        res.status(200).json({
-            message: "User deleted successfully",
-            user: user
-        });
+        const username = req.params.username
+        const { role } = req.user;
+        if (role != 'admin') {
+            res.status(401).json({ message: "Unauthorized" });
+        }
+        const userTobeDeactivated = await User.findOne({ username }).select('-password').exec();
+
+        let id: mongoose.Types.ObjectId;
+
+        if (!userTobeDeactivated) {
+            res.status(404).json({ message: "User not found" });
+        } else {
+            id = userTobeDeactivated._id;
+            const user = await User.findByIdAndUpdate(
+                id,
+                { active: false },
+                { new: true }
+            );
+            res.status(200).json({
+                message: "User deleted successfully",
+                user: user
+            });
+        }
+      
     } catch (err) {
         res.status(400).json(err);
     }
@@ -136,10 +167,15 @@ const InactiveUser = async (req: Request, res: Response) => {
 
 // get all users
 
-const getAllUsers = async (req: Request, res: Response) => {
+const getAllUsers = async (req: any, res: Response) => {
     try {
-        const users = await User.find()
-            .exec();
+        const { role } = req.user;
+
+        if (role != 'admin') {
+            res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const users = await User.find().select('-password').exec();
         res.status(200).json(users);
     } catch (err) {
         res.status(400).json(err);
