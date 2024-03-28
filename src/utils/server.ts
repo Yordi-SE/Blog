@@ -4,8 +4,8 @@ import blogRoutes from '../routes/blogRoutes'
 const createApp = ():express.Application =>{
     const app:express.Application = express()
     app.use(express.json())
-    app.use('/api', tagRoutes)
-    app.use('/api',blogRoutes)
+    app.use('/api/tag', tagRoutes)
+    app.use('/api/blog',blogRoutes)
     return app
 }
 export default createApp

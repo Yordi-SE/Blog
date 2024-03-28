@@ -3,9 +3,9 @@ import { createTag, deleteTag, getAllTags, updateTag } from "../controller/tagCo
 const route = Router();
 
 
-route.get('/tag/getAllTags', getAllTags);
-route.post('/tag/createTag', createTag);
-route.put('/tag/updateTag/:id', updateTag);
-route.delete('/tag/deleteTag/:id', deleteTag);
+route.get('/getAllTags', getAllTags);
+route.post('/createTag', createTag);
+route.put('/updateTag/:id', updateTag);
+route.delete('/deleteTag/:id', deleteTag);
 
 export default route;
