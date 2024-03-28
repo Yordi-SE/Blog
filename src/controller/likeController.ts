@@ -1,8 +1,7 @@
 import {Request,Response} from 'express';
-import { Like,ILike } from '../model/like';
+import Like from '../model/likeModel';
 import User from '../model/userSchema';
-import Blog from '../model/blog-model';
-
+import Blog from '../model/blogModel'
 
 export const likeBlog = async (req: Request, res: Response):Promise<any> => {
     const { userId, blogId } = req.body;
