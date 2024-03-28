@@ -28,3 +28,4 @@ const validateBlogData = async (req:Request,res:Response,next:NextFunction):Prom
     }
     next()
 }
+export default validateBlogData
