@@ -10,4 +10,4 @@ userRoutes.put('/api/user/updateUser/:id', updateUser);
 userRoutes.put('/api/user/deactivate/:id', InactiveUser);
 userRoutes.get('/api/user/getAllUsers', getAllUsers);
 
-export default userRoutes;
+export default userRoutes
