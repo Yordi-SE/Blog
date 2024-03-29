@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 
 
 
-const createRating = async (req:any,res:Response) => {
+export const createRating = async (req:any,res:Response) => {
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -36,7 +36,7 @@ const createRating = async (req:any,res:Response) => {
     }
 };
 
-const updateRating = async (req:any,res:Response) => {
+export const updateRating = async (req:any,res:Response) => {
     try {
 
         const {ratingValue} = req.body;
@@ -60,7 +60,7 @@ const updateRating = async (req:any,res:Response) => {
 
 
 
-const deleteRatingAndUpdateBlog = async (req:any,res:Response) => {
+export const deleteRatingAndUpdateBlog = async (req:any,res:Response) => {
 
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -96,7 +96,7 @@ const deleteRatingAndUpdateBlog = async (req:any,res:Response) => {
     }
 };
 
-const getBlogRatings = async (req:any,res:Response) => {
+export const getBlogRatings = async (req:any,res:Response) => {
     try {
 
         const blogId = req.body.blogId;
@@ -117,7 +117,7 @@ const getBlogRatings = async (req:any,res:Response) => {
 };
 
 
-const getUserRatings = async (req:any,res:Response) => {
+export const getUserRatings = async (req:any,res:Response) => {
     try {
         const userId = req.user.id;
         if (!userId) {
@@ -135,7 +135,7 @@ const getUserRatings = async (req:any,res:Response) => {
     }
 };
 
-const getRating = async (req:any, res:Response) => {
+export const getRating = async (req:any, res:Response) => {
     try {
         const userId = req.user.id;
         const {blogId} = req.body;
@@ -161,4 +161,4 @@ const getRating = async (req:any, res:Response) => {
 };
 
 
-export default {createRating,updateRating,deleteRatingAndUpdateBlog,getBlogRatings,getUserRatings,getRating};
+// module.exports =  {createRating,updateRating,deleteRatingAndUpdateBlog,getBlogRatings,getUserRatings,getRating};
