@@ -2,7 +2,6 @@ import {getAllUsers, getUser, updateUser, InactiveUser, createUser} from '../con
 import { handleFileUpload } from '../middleware/multer';
 import { cloudinaryUpload } from '../middleware/fileUpload';
 import { Router } from 'express';
-import { create } from 'domain';
 
 
 
