@@ -5,7 +5,9 @@ import jwt from "jsonwebtoken";
 // token is responded to the client after successful login. This token is used to authenticate the user in the subsequent requests.
 
 const verifyToken = (req: any, res: Response, next: NextFunction) => {
+
     const token = req.header("auth-token");
+    
     if (!token) {
         return res.status(401).json({
             message: "Access denied, token not provided"
