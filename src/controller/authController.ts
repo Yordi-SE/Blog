@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 
-export const login = async (req: Request, res: Response) => { 
+const login = async (req: Request, res: Response) => { 
 
     try {
         const { email, password } = req.body;
@@ -50,4 +50,7 @@ export const login = async (req: Request, res: Response) => {
     } catch (err) {
         res.status(400).json(err);
     }
-}
+};
+
+
+export default login;
