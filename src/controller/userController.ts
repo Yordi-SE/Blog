@@ -30,7 +30,7 @@ const createUser = async (req: any, res: Response) => {
         const createdUser = await User.create({
             username,
             email,
-            password,
+            password:hashedPassword,
             name,
             bio,
             profileImage // Save profile picture URL in the user document
