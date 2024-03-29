@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import multer from "multer";
 import cloudinary from "../config/cloudinaryConfig"
 import { UploadedFile } from 'express-fileupload'
+import bcrypt from "bcrypt";
 // Configure Multer for file uploads
 const upload = multer({ dest: 'uploads/' });
 
@@ -24,6 +25,7 @@ const createUser = async (req: any, res: Response) => {
         if (user) {
             return res.status(400).json({ message: "User already exists" });
         }
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         const createdUser = await User.create({
             username,
