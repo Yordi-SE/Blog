@@ -10,17 +10,6 @@ export interface IBlog extends Document {
     likes: number,
     rating: object
 }
-const ratingSchema = new Schema({
-    ratingValue: {
-        type: Number,
-        default: 0
-    },
-    ratingNumber:{
-        type: Number,
-        default: 0
-    }
-})
-
 const blogSchema = new Schema({
     title: {
         type: String,
@@ -45,7 +34,15 @@ const blogSchema = new Schema({
         type: Number,
         default: 0
     },
-    rating: ratingSchema
+    ratingValue: {
+        type: Number,
+        default: 0
+    },
+    ratingNumber: {
+        type: Number,
+        default: 0
+    }
+    
 })
 
 export default model<IBlog>('Blog', blogSchema)
