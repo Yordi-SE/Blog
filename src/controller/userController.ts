@@ -3,19 +3,21 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import multer from "multer";
 import cloudinary from "../config/cloudinaryConfig"
-
+import { UploadedFile } from 'express-fileupload'
 // Configure Multer for file uploads
 const upload = multer({ dest: 'uploads/' });
 
-const createUser = async (req: Request, res: Response) => {
-    console.log(req.body)
+const createUser = async (req: any, res: Response) => {
+    
     try {
+                
         const { 
             username, 
             email, 
             password, 
             name, 
             bio,
+            profileImage
         } = req.body;
         // Check if the user already exists
         const user = await User.findOne({ username, email });
@@ -23,41 +25,27 @@ const createUser = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "User already exists" });
         }
 
-        // Upload profile picture to Cloudinary
-        upload.single('profileImage')(req, res, async (err) => {
-            if (err) {
-                return res.status(500).json({ error: 'Failed to upload profile picture',err });
-            }
-
-            let profilePictureUrl:string | null = null;
-
-            // Check if file was uploaded
-            if (req.file) {
-                const result = await cloudinary.v2.uploader.upload(req.file.path);
-                profilePictureUrl = result.secure_url;
-            }
-
-            // Create a new user with profile picture URL
-            const createdUser = await User.create({
-                username,
-                email,
-                password,
-                name,
-                bio,
-                profileImage: profilePictureUrl, // Save profile picture URL in the user document
-            });
+        const createdUser = await User.create({
+            username,
+            email,
+            password,
+            name,
+            bio,
+            profileImage // Save profile picture URL in the user document
+        });
 
             // Send the response
-            res.status(201).json({
-                message: "User created successfully",
-                user: createdUser
-            });
+        res.status(201).json({
+            message: "User created successfully",
+            user: createdUser
         });
 
     } catch (err) {
         res.status(400).json(err);
     }
-}
+};
+
+
 
 // get specific user
 const getUser = async (req: any, res: Response) => { 
