@@ -6,6 +6,7 @@ import NotFound from "../error/notFound";
 import BadRequestError from "../error/badRequest";
 import commentModel from "../model/commentModel";
 import likeModel from "../model/likeModel";
+import Rating from "../model/ratingSchema";
 const getAll = async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
     try{
         const page_number:number = req.query.page ? parseInt(req.query.page as string): 1
@@ -132,6 +133,7 @@ const deleteBlog = async (req:any,res:Response,next:NextFunction):Promise<any>=>
         await Blog.findByIdAndDelete(req.params.id)
         await commentModel.findOneAndDelete({blogId:req.params.id})
         await likeModel.findOneAndDelete({blogId:req.params.id})
+        await Rating.findOneAndDelete({blogId:req.params.id})
         res.status(204).send()
     }
     catch(err:any){
