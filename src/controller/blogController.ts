@@ -4,11 +4,16 @@ import Tag from "../model/tagSchema";
 import User from "../model/userSchema";
 import NotFound from "../error/notFound";
 import BadRequestError from "../error/badRequest";
+import commentModel from "../model/commentModel";
+import likeModel from "../model/likeModel";
 const getAll = async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
     try{
         const page_number:number = req.query.page ? parseInt(req.query.page as string): 1
         const Page_size:number = req.query.page_size ? parseInt(req.query.page_size as string): 10
         const blogs = await Blog.find().select('-userId').populate('tagId').skip((page_number - 1) * Page_size).limit(Page_size)
+        if (blogs.length === 0){
+            throw new NotFound({message:"not task found"})
+        }
         res.status(200).json(blogs)
     }
     catch(err){
@@ -19,6 +24,9 @@ const getAll = async (req:Request,res:Response,next:NextFunction):Promise<void>=
 const getById = async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
     try{
         const blog = await Blog.findById(req.params.id).select('-userId').populate('tagId')
+        if (!blog){
+            throw new NotFound()
+        }
         res.status(200).json(blog)
     }
     catch(err){
@@ -31,6 +39,9 @@ const getMyBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>
         const page_number:number = req.query.page ? parseInt(req.query.page as string): 1
         const Page_size:number = req.query.page_size ? parseInt(req.query.page_size as string): 10
         const blogs = await Blog.find({userId:req.user.id}).select('-userId').populate('tagId').skip((page_number - 1) * Page_size).limit(Page_size)
+        if (blogs.length === 0){
+            throw new NotFound({message:"no task found"})
+        }
         res.status(200).json(blogs)
     }
     catch(err){
@@ -42,11 +53,14 @@ const getUserBlog = async (req:any,res:Response,next:NextFunction):Promise<any>=
     try{
         const page_number:number = req.query.page ? parseInt(req.query.page as string): 1
         const Page_size:number = req.query.page_size ? parseInt(req.query.page_size as string): 10
-        const user:any = User.findOne({username: req.params.username})
+        const user = await User.findOne({username: req.params.username})
         if (!user){
             throw new NotFound({code:404, message:'user not found'})
         }
         const blogs = await Blog.find({userId:user._id}).select('-userId').populate('tagId').skip((page_number - 1) * Page_size).limit(Page_size)
+        if (blogs.length === 0){
+            throw new NotFound({message:"not task found"})
+        }
         res.status(200).json(blogs)
     }
     catch(err){
@@ -91,7 +105,8 @@ const patchBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>
             tagId:req.body.tagId
 
         }
-        const updatedBlog = await Blog.findOneAndUpdate({$and: [{_id:req.params.id},{userId:req.user.id}]},blog).populate('tagId').select('-userId');
+        await Blog.findOneAndUpdate({$and: [{_id:req.params.id},{userId:req.user.id}]},blog)
+        const updatedBlog = await Blog.findOne({$and: [{_id:req.params.id},{userId:req.user.id}]}).populate('tagId').select('-userId');
         if (!updatedBlog){
             throw new NotFound({code:404,message:"Blog Not Found"})
         }
@@ -110,10 +125,13 @@ const deleteBlog = async (req:any,res:Response,next:NextFunction):Promise<any>=>
         if (!blog){
             throw new NotFound({code:404,message:"Blog Not Found"})
         }
-        if (blog.userId !== req.user.id && req.user.role != 'Admin'){
+        console.log("user",blog.userId,req.user.id)
+        if (blog.userId.toString() !== req.user.id && req.user.role != 'Admin'){
             throw new BadRequestError({code:403,message:'unauthorized'})
         }
         await Blog.findByIdAndDelete(req.params.id)
+        await commentModel.findOneAndDelete({blogId:req.params.id})
+        await likeModel.findOneAndDelete({blogId:req.params.id})
         res.status(204).send()
     }
     catch(err:any){

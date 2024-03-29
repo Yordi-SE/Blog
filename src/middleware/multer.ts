@@ -2,7 +2,7 @@ import multer from "multer";
 import { Request, Response, NextFunction } from "express";
 
 // Define multer middleware to handle file upload
-const upload = multer();
+const upload = multer({dest:'/uploads'});
 
 export const handleFileUpload = (req: any, res: Response, next: NextFunction) => {
     upload.single('profileImage')(req, res, (err: any) => {
