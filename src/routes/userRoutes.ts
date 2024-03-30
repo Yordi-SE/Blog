@@ -9,9 +9,9 @@ const userRoutes = Router();
 
 // userRoutes.post('/createUser',createUser);
 userRoutes.post('/createUser', handleFileUpload, cloudinaryUpload, createUser);
-userRoutes.get('/getUser/:id', getUser);
-userRoutes.put('/updateUser/:id', updateUser);
-userRoutes.put('/deactivate/:id', InactiveUser);
+userRoutes.get('/getUser/', getUser);
+userRoutes.put('/updateUser/', updateUser);
+userRoutes.put('/deactivate/:username', InactiveUser);
 userRoutes.get('/getAllUsers', getAllUsers);
 
 export default userRoutes

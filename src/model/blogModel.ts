@@ -8,7 +8,8 @@ export interface IBlog extends Document {
     userId: Schema.Types.ObjectId,
     comments: number,
     likes: number,
-    rating: object
+    ratingValue: number,
+    ratingNumber: number,
 }
 const blogSchema = new Schema({
     title: {
@@ -34,15 +35,14 @@ const blogSchema = new Schema({
         type: Number,
         default: 0
     },
-    ratingValue: {
-        type: Number,
-        default: 0
-    },
     ratingNumber: {
         type: Number,
         default: 0
+    },
+    retingValue: {
+        type: Number,
+        default: 0
     }
-    
 })
 
 export default model<IBlog>('Blog', blogSchema)
