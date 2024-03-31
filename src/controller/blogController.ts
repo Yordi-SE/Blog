@@ -7,13 +7,14 @@ import BadRequestError from "../error/badRequest";
 import commentModel from "../model/commentModel";
 import likeModel from "../model/likeModel";
 import Rating from "../model/ratingSchema";
+import mongoose from "mongoose";
 const getAll = async (req:Request,res:Response,next:NextFunction):Promise<void>=>{
     try{
         const page_number:number = req.query.page ? parseInt(req.query.page as string): 1
         const Page_size:number = req.query.page_size ? parseInt(req.query.page_size as string): 10
         const blogs = await Blog.find().select('-userId').populate('tagId').skip((page_number - 1) * Page_size).limit(Page_size)
         if (blogs.length === 0){
-            throw new NotFound({message:"not task found"})
+            throw new NotFound({message:"no task found"})
         }
         res.status(200).json(blogs)
     }
@@ -60,7 +61,7 @@ const getUserBlog = async (req:any,res:Response,next:NextFunction):Promise<any>=
         }
         const blogs = await Blog.find({userId:user._id}).select('-userId').populate('tagId').skip((page_number - 1) * Page_size).limit(Page_size)
         if (blogs.length === 0){
-            throw new NotFound({message:"not task found"})
+            throw new NotFound({message:"no task found"})
         }
         res.status(200).json(blogs)
     }
@@ -120,8 +121,11 @@ const patchBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>
     }
 
 }
-const deleteBlog = async (req:any,res:Response,next:NextFunction):Promise<any>=>{
+const deleteBlog = async (req:any,res:Response,next:NextFunction):Promise<void>=>{
+    const session = await mongoose.startSession();
     try {
+        await session.startTransaction();
+
         const blog = await Blog.findById(req.params.id)
         if (!blog){
             throw new NotFound({code:404,message:"Blog Not Found"})
@@ -130,15 +134,22 @@ const deleteBlog = async (req:any,res:Response,next:NextFunction):Promise<any>=>
         if (blog.userId.toString() !== req.user.id && req.user.role != 'Admin'){
             throw new BadRequestError({code:403,message:'unauthorized'})
         }
-        await Blog.findByIdAndDelete(req.params.id)
-        await commentModel.findOneAndDelete({blogId:req.params.id})
-        await likeModel.findOneAndDelete({blogId:req.params.id})
-        await Rating.findOneAndDelete({blogId:req.params.id})
+        await Promise.all([
+            await Blog.findByIdAndDelete(req.params.id),
+            await commentModel.findOneAndDelete({blogId:req.params.id}),
+            await likeModel.findOneAndDelete({blogId:req.params.id}),
+            await Rating.findOneAndDelete({blogId:req.params.id})
+        ])
+        await session.commitTransaction();
         res.status(204).send()
     }
     catch(err:any){
+        session.abortTransaction()
         console.log("error occured while updating the blog")
         next(err)
+    }
+    finally {
+        session.endSession()
     }
 }
 export default {createBlog,patchBlog,getAll,deleteBlog,getById,getMyBlog,getUserBlog}
