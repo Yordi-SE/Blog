@@ -162,9 +162,9 @@ const getAllUsers = async (req: any, res: Response) => {
     try {
         const { role } = req.user;
 
-        if (role != 'admin') {
-            res.status(401).json({ message: "Unauthorized" });
-        }
+        // if (role != 'admin') {
+        //     res.status(401).json({ message: "Unauthorized" });
+        // }
         const users = await User.find().select('-password').exec();
         res.status(200).json(users);
     } catch (err) {

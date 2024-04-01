@@ -5,7 +5,6 @@ import { Request,Response,NextFunction } from "express";
 
 export const cloudinaryUpload = async (req: any, res: Response, next: NextFunction) => {
     try {
-        console.log('cloudinary upload middleware')
         const file = req.uploadedFile;
         if (!file) {
             return res.status(400).json({ message: "No file uploaded" });
